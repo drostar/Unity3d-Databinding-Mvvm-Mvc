@@ -33,11 +33,11 @@ namespace Foundation.Databinding.Model
         {
             if (paramater == null)
                 return null;
-            if (desiredType == null || desiredType.IsInstanceOfType(paramater))
+
+            if (desiredType == null || desiredType.IsAssignable(paramater))
                 return paramater;
 
-
-            if (desiredType.IsEnum)
+            if (desiredType.IsEnum())
             {
                 return Enum.Parse(desiredType, paramater.ToString());
             }

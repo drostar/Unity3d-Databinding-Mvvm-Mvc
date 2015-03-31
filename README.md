@@ -1,4 +1,4 @@
-# Foundation Databinding (v4.0) 3/8/2015
+# Foundation Databinding (v4.2) 3/24/2015
 
 Nicholas Ventimiglia | AvariceOnline.com
 
@@ -15,6 +15,8 @@ Databinding is a mechanism to 'connect' your UI widgets (buttons, input, text, l
 
 - Uses IObservableModel interface instead of IPropertyNotifyChange. IObservableModel includes the changed value along side the changed property name as to prevent an additional reflection call.
 
+## Platforms
+Desktop, Webplayer, Android, iOS, Windows Store
 
 ##Dependencies
 

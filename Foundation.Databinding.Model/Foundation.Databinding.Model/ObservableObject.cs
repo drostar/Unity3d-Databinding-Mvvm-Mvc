@@ -6,8 +6,14 @@
 //  -------------------------------------
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using Foundation.Tasks;
 using UnityEngine;
+#if UNITY_WSA
+using System.Runtime.CompilerServices;
+#endif
 
 namespace Foundation.Databinding.Model
 {
@@ -17,7 +23,18 @@ namespace Foundation.Databinding.Model
     /// </summary>
     public abstract class ObservableObject : IObservableModel
     {
-        public event Action<ObservableMessage> OnBindingUpdate;
+        private Action<ObservableMessage> _onBindingEvent = delegate { };
+        public event Action<ObservableMessage> OnBindingUpdate
+        {
+            add
+            {
+                _onBindingEvent = (Action<ObservableMessage>)Delegate.Combine(_onBindingEvent, value);
+            }
+            remove
+            {
+                _onBindingEvent = (Action<ObservableMessage>)Delegate.Remove(_onBindingEvent, value);
+            }
+        }
 
         private ModelBinder _binder;
 
@@ -31,11 +48,11 @@ namespace Foundation.Databinding.Model
 
         public void RaiseBindingUpdate(string memberName, object paramater)
         {
-            if (OnBindingUpdate != null)
+            if (_onBindingEvent != null)
             {
                 _bindingMessage.Name = memberName;
                 _bindingMessage.Value = paramater;
-                OnBindingUpdate(_bindingMessage);
+                _onBindingEvent(_bindingMessage);
             }
 
             _binder.RaiseBindingUpdate(memberName, paramater);
@@ -100,7 +117,7 @@ namespace Foundation.Databinding.Model
         /// <param name="routine"></param>
         public Coroutine StartCoroutine(IEnumerator routine)
         {
-           return TaskManager.StartRoutine(routine);
+            return TaskManager.StartRoutine(routine);
         }
 
         /// <summary>
@@ -111,5 +128,74 @@ namespace Foundation.Databinding.Model
         {
             TaskManager.StopRoutine(routine);
         }
+
+#if !UNITY_WSA
+        /// <summary>
+        /// Mvvm light set method
+        /// </summary>
+        /// <remarks>
+        /// https://github.com/NVentimiglia/Unity3d-Databinding-Mvvm-Mvc/issues/3
+        /// https://github.com/negue
+        /// </remarks>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="valueHolder"></param>
+        /// <param name="value"></param>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+        protected bool Set<T>(ref T valueHolder, T value, string propName = null)
+        {
+            var same = EqualityComparer<T>.Default.Equals(valueHolder, value);
+
+
+            if (!same)
+            {
+                if (string.IsNullOrEmpty(propName))
+                {
+                    // get call stack
+                    var stackTrace = new StackTrace();
+                    // get method calls (frames)
+                    var stackFrames = stackTrace.GetFrames().ToList();
+
+                    if (propName == null && stackFrames.Count > 1)
+                    {
+                        propName = stackFrames[1].GetMethod().Name.Replace("set_", "");
+                    }
+                }
+                valueHolder = value;
+
+                NotifyProperty(propName, value);
+
+                return true;
+            }
+
+            return false;
+        }
+#else
+        /// <summary>
+        /// Mvvm light set method
+        /// </summary>
+        /// <remarks>
+        /// https://github.com/NVentimiglia/Unity3d-Databinding-Mvvm-Mvc/issues/3
+        /// https://github.com/negue
+        /// </remarks>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="valueHolder"></param>
+        /// <param name="value"></param>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+        protected bool Set<T>(ref T valueHolder, T value, [CallerMemberName] string propName = null)
+        {
+            var same = EqualityComparer<T>.Default.Equals(valueHolder, value);
+
+            if (!same)
+            {
+                NotifyProperty(propName, value);
+                valueHolder = value;
+                return true;
+            }
+
+            return false;
+        }
+#endif
     }
 }

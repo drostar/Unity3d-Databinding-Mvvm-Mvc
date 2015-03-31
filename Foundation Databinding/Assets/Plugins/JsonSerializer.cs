@@ -43,6 +43,9 @@ namespace FullSerializer
             if (r.Failed)
                 throw r.AsException;
 
+            if (data.IsDictionary && data.AsDictionary.ContainsKey("$content"))
+                data = data.AsDictionary["$content"];
+
             if (!prettyJson)
                 return fsJsonPrinter.CompressedJson(data);
 
@@ -57,6 +60,9 @@ namespace FullSerializer
         /// <returns></returns>
         public static T Deserialize<T>(string json)
         {
+            if (string.IsNullOrEmpty(json))
+                return default(T);
+
             fsData data;
             fsResult fsFailure1 = fsJsonParser.Parse(json, out data);
             if (fsFailure1.Failed)
@@ -80,14 +86,22 @@ namespace FullSerializer
         /// <returns></returns>
         public static object Deserialize(string json, Type type)
         {
-            // step 1: parse the JSON data
-            fsData data = fsJsonParser.Parse(json);
+            if (string.IsNullOrEmpty(json))
+                return null;
 
-            // step 2: deserialize the data
-            object deserialized = null;
-            Internal.TryDeserialize(data, type, ref deserialized).AssertSuccessWithoutWarnings();
+            fsData data;
+            fsResult fsFailure1 = fsJsonParser.Parse(json, out data);
+            if (fsFailure1.Failed)
+                throw fsFailure1.AsException;
 
-            return deserialized;
+            var instance = Activator.CreateInstance(type);
+
+            fsResult fsFailure2 = Internal.TryDeserialize(data, type, ref instance);
+
+            if (fsFailure2.Failed)
+                throw fsFailure2.AsException;
+
+            return instance;
         }
     }
 }
