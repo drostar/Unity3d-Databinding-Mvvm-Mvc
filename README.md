@@ -1,27 +1,25 @@
-# Foundation Databinding (v4.2) 3/24/2015
+# Foundation Databinding (v4.3) 4/01/2015
 
 Nicholas Ventimiglia | AvariceOnline.com
 
 Databinding is a mechanism to 'connect' your UI widgets (buttons, input, text, lists) to 'view scripts'. This strategy is necessary for the Model-View-ViewModel architecture that is very popular in the C# world. In MVVM Your views's properties, fields and methods are 'observed' by the UI elements and any changes to your view's are communicated to the UI elements so they may update worry free.
 
 
+- Supports most major uGUI elements (Input, text, images, ect)
+
 - Supports inheritance, interfaces, structs and using DLLs
 
-- Bind to monobehaviours and plain CLR objects (wont have change notification)
-
-- Foundation.Databinding.Model is a dll, so you can place your game model in a class library
+- Bind to monobehaviours, CLR objects, INotifyPropertyChange or IObservableModel.
 
 - Bind to methods, fields, properties or coroutines
-
-- Uses IObservableModel interface instead of IPropertyNotifyChange. IObservableModel includes the changed value along side the changed property name as to prevent an additional reflection call.
 
 ## Platforms
 Desktop, Webplayer, Android, iOS, Windows Store
 
 ##Dependencies
 
-- [FullSerializer](https://github.com/jacobdufault/fullserializer) Json Library
-- [Foundation.Tasks](https://github.com/NVentimiglia/Unity3d-Async-Task) Async Library
+- ~~[FullSerializer](https://github.com/jacobdufault/fullserializer) Json Library~~
+- ~~[Foundation.Tasks](https://github.com/NVentimiglia/Unity3d-Async-Task) Async Library~~
 - [Foundation.Localization](https://github.com/NVentimiglia/Unity3d-Localization) Translation Library
 - Localization may be omitted by using the NoLocalization compilation directive
 - [Foundation.Injector](https://github.com/NVentimiglia/Unity3d-Service-Injector) Is mentioned in the comments. It is not needed but I personally use it so that I dont need to reference my components in the editor.
